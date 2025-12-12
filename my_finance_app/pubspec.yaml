@@ -1,0 +1,47 @@
+name: rise
+description: A professional personal finance and expense tracking mobile application.
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Dependencies lama kamu
+  provider: ^6.0.0
+  sqflite: ^2.3.0
+  path_provider: ^2.1.0
+  shared_preferences: ^2.2.0
+  intl: ^0.18.1
+  local_auth: ^2.3.0
+  image_picker: ^0.8.7
+  uuid: ^4.0.0
+  
+  # Database Hive
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # --- TAMBAHAN BARU (OCR Scanner Struk) ---
+  google_mlkit_text_recognition: ^0.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  
+  # Generator
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.6
+
+flutter:
+  uses-material-design: true
+  assets:
+    - Rise.png
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: Montserrat/static/Montserrat-ExtraBold.ttf
+          weight: 800
