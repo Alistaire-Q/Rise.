@@ -215,7 +215,7 @@ class DashboardScreen extends StatelessWidget {
                             ),
                             if (todayTransactions.isNotEmpty)
                               Text(
-                                '${todayTransactions.length} today',
+                                '${todayTransactions.length} for today',
                                 style: TextStyle(
                                     color: Colors.grey[600], fontSize: 12),
                               ),

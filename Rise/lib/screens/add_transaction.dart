@@ -307,7 +307,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.swap_horiz, color: const Color(0xFFC5F244)),
+                            Icon(Icons.swap_horiz, color: const Color(0xFF0B3D2E)), // Ikon hijau tua
                             const SizedBox(width: 12),
                             Text('Between Accounts',
                                 style: theme.textTheme.bodyLarge?.copyWith(color: Colors.black)),

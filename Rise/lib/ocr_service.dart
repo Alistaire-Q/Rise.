@@ -1,68 +1,78 @@
-import 'dart:io';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 
-class OCRService {
-  // Fungsi utama untuk memproses gambar menjadi angka
-  Future<double?> scanReceipt(File imageFile) async {
-    final inputImage = InputImage.fromFile(imageFile);
-    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+class OcrService {
+  final _picker = ImagePicker();
+  // Menggunakan script Latin untuk membaca tulisan umum
+  final _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
+  // Fungsi baru: Langsung buka kamera -> Foto -> Deteksi Angka
+  Future<double?> scanReceipt() async {
     try {
-      // 1. Suruh Google ML Kit membaca semua teks di gambar
-      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      // 1. Buka Kamera
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
       
-      double maxAmount = 0.0;
+      // Jika user menekan tombol 'Back' / batal foto
+      if (photo == null) return null;
 
-      // 2. Siapkan "Penyaring" (Regex) untuk mencari format uang
-      // Mencari angka yang mungkin ada titik/koma (contoh: 50.000, 12,500)
-      final RegExp priceRegex = RegExp(r'[0-9]+[.,]?[0-9]*[.,]?[0-9]+');
+      // 2. Proses Gambar dengan ML Kit
+      final inputImage = InputImage.fromFilePath(photo.path);
+      final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
 
-      // 3. Loop setiap baris teks yang ditemukan
-      for (TextBlock block in recognizedText.blocks) {
-        for (TextLine line in block.lines) {
-          String text = line.text.toLowerCase();
-          
-          // Bersihkan teks dari simbol mata uang & spasi agar mudah dibaca angka
-          String cleanText = text.replaceAll('rp', '').replaceAll('idr', '').replaceAll(' ', '');
-          
-          // Coba cari pola angka di baris ini
-          Iterable<Match> matches = priceRegex.allMatches(cleanText);
-          
-          for (var match in matches) {
-            String numStr = match.group(0)!;
-            
-            // Normalisasi format angka (Hapus titik ribuan, ganti koma desimal jadi titik)
-            // Contoh: "50.000" jadi "50000"
-            // PENTING: Logic ini asumsi format Indonesia (titik = ribuan)
-            numStr = numStr.replaceAll('.', '').replaceAll(',', '.');
-            
-            try {
-              double val = double.parse(numStr);
-              
-              // Filter Logika:
-              // Kita cari angka TERBESAR di struk, karena biasanya "Total Bayar" 
-              // adalah angka paling besar dibanding harga satuan barang.
-              // Kita juga abaikan angka kecil (< 100 perak) biar bukan jumlah qty.
-              if (val > maxAmount && val > 100) {
-                maxAmount = val;
-              }
-            } catch (e) {
-              // Skip jika gagal convert
-            }
-          }
-        }
-      }
-      
-      // Jika ketemu angka valid, kembalikan. Jika tidak, null.
-      if (maxAmount > 0) return maxAmount;
-      return null;
+      // 3. Cari Total Harga dari teks yang didapat
+      return _extractTotalAmount(recognizedText);
 
     } catch (e) {
       print('Error scanning receipt: $e');
       return null;
-    } finally {
-      // Wajib tutup recognizer biar hemat memori
-      textRecognizer.close();
     }
+  }
+
+  // Logika khusus untuk mencari angka Rupiah terbesar (Total Belanja)
+  double? _extractTotalAmount(RecognizedText recognizedText) {
+    double maxAmount = 0.0;
+
+    for (TextBlock block in recognizedText.blocks) {
+      for (TextLine line in block.lines) {
+        String text = line.text.toLowerCase();
+        
+        // Bersihkan teks: Hapus huruf (rp, idr, total), spasi, dan simbol aneh
+        // Kita hanya sisakan Angka (0-9), Titik (.), dan Koma (,)
+        String cleanText = text.replaceAll(RegExp(r'[^0-9.,]'), '');
+
+        if (cleanText.isEmpty) continue;
+
+        // --- LOGIKA MATA UANG INDONESIA ---
+        // Format Rupiah biasanya: 50.000 atau 50.000,00
+        // Dart hanya mengerti format: 50000.00 (Titik sebagai desimal)
+        
+        // Langkah:
+        // 1. Hapus semua titik ribuan (Contoh: "50.000" jadi "50000")
+        // 2. Ganti koma menjadi titik desimal (Contoh: "50000,00" jadi "50000.00")
+        String standardFormat = cleanText.replaceAll('.', '').replaceAll(',', '.');
+
+        try {
+          double val = double.parse(standardFormat);
+
+          // Filter Cerdas:
+          // 1. Abaikan angka kecil (< 1000) agar tidak salah baca tanggal (2024) atau qty (1 pcs)
+          // 2. Ambil angka TERBESAR yang ditemukan, karena biasanya Total adalah nominal paling besar di struk.
+          if (val > maxAmount && val > 1000) {
+            maxAmount = val;
+          }
+        } catch (e) {
+          // Abaikan jika teks bukan angka valid
+          continue;
+        }
+      }
+    }
+
+    // Kembalikan null jika tidak ada angka valid yang ditemukan
+    return maxAmount > 0 ? maxAmount : null;
+  }
+
+  // Penting: Tutup recognizer saat aplikasi dimatikan/tidak dipakai untuk hemat memori
+  void dispose() {
+    _textRecognizer.close();
   }
 }

@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: limeAccent, 
           elevation: 4,
           shape: const CircleBorder(),
-          child: const Icon(Icons.qr_code, size: 30, color: Colors.black87),
+          child: const Icon(Icons.camera_alt, size: 30, color: Colors.black87),
         ),
       ),
 

@@ -10,38 +10,55 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Dependencies lama kamu
+
+  # State Management
   provider: ^6.0.0
+
+  # Database & Storage
   sqflite: ^2.3.0
-  path_provider: ^2.1.0
-  shared_preferences: ^2.2.0
-  intl: ^0.18.1
-  local_auth: ^2.3.0
-  image_picker: ^0.8.7
-  uuid: ^4.0.0
-  
-  # Database Hive
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.0
+  path_provider: ^2.1.0
 
-  # --- TAMBAHAN BARU (OCR Scanner Struk) ---
+  # Utilities (Format Tanggal, ID, Keamanan)
+  intl: ^0.18.1
+  uuid: ^4.0.0
+  local_auth: ^2.3.0
+
+  # Camera & AI (PENTING: Untuk fitur Scan Struk)
+  image_picker: ^1.0.4
   google_mlkit_text_recognition: ^0.11.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-  
-  # Generator
+
+  # Code Generator (Untuk Hive & Lainnya)
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
 
+  # --- TAMBAHAN BARU (Untuk Ganti Ikon Aplikasi) ---
+  flutter_launcher_icons: "^0.13.1"
+
 flutter:
   uses-material-design: true
+
+  # Pastikan file gambar ada di lokasi yang sesuai dengan path ini
   assets:
     - Rise.png
+    # Jika nanti kamu buat folder assets, ubah jadi: - assets/Rise.png
+
   fonts:
     - family: Montserrat
       fonts:
         - asset: Montserrat/static/Montserrat-ExtraBold.ttf
           weight: 800
+
+# --- KONFIGURASI IKON APLIKASI ---
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/icon/app_icon.png" # Pastikan kamu taruh gambar logomu disini!
+  min_sdk_android: 21
