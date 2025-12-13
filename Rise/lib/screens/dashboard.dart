@@ -62,7 +62,7 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     const SizedBox(height: 20),
                     Text(
-                      'Good Morning, Saver!',
+                      'Hello, Saver!',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 14,
