@@ -1,6 +1,6 @@
-# MyFinanceApp (Starter Scaffold)
+# Rise (Starter Scaffold)
 
-This repository is a starter scaffold for "MyFinanceApp" — a cross-platform personal finance manager (MVP).
+This repository is a starter scaffold for "Rise" — a cross-platform personal finance manager (MVP).
 
 ## What's included
 - Minimal Flutter app skeleton
@@ -17,7 +17,7 @@ This repository is a starter scaffold for "MyFinanceApp" — a cross-platform pe
 ## Quick start (PowerShell)
 
 ```powershell
-cd "d:/WPy64-31241/projects/finance app/my_finance_app"
+cd "d:/WPy64-31241/projects/finance app/Rise"
 flutter pub get
 flutter run
 ```
