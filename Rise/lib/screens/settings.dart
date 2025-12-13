@@ -29,6 +29,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Select Currency',
             style: TextStyle(color: _primaryDark, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 6),
+          Text(
+            'Totals may vary due to currency conversion.',
+            style: TextStyle(
+              color: colors.grey[600],
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            )
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: m.Currency.values.map((currency) {
