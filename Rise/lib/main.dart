@@ -2,17 +2,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; 
+
 import 'models.dart';
 import 'repository.dart';
 import 'security_provider.dart';
 import 'currency_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home.dart';
+import 'screens/login_screen.dart'; // <--- 1. IMPORT BARU DITAMBAHKAN DISINI
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // --- SETUP DATABASE HIVE ---
+  // --- SETUP SUPABASE (DATABASE CLOUD) ---
+  await Supabase.initialize(
+    url: 'https://nifixlekqywjislepvoz.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZml4bGVrcXl3amlzbGVwdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzgyMjIsImV4cCI6MjA4MTIxNDIyMn0.yP95sQwrvLBM0qi1d_sS6ID5XKw38nCxRXKNqBcTmv4',
+  );
+
+  // --- SETUP DATABASE HIVE (LOCAL) ---
+  // (Kode lama tetap aman di bawah ini)
+  
   // 1. Inisialisasi Hive
   await Hive.initFlutter();
 
@@ -33,7 +44,6 @@ void main() async {
   
   // !!! PERBAIKAN PENTING DI SINI !!!
   // Wajib panggil init() agar data akun default (Cash, Bank) dibuat otomatis
-  // Jika ini tidak dipanggil, Dropdown Akun akan kosong.
   await repo.init(); 
   
   // --- SETUP SECURITY ---
@@ -90,6 +100,7 @@ class MyApp extends StatelessWidget {
         home: const SplashScreen(),
         routes: {
           '/home': (context) => const HomeScreen(),
+          '/login': (context) => const LoginScreen(), // <--- 2. ROUTE BARU DITAMBAHKAN DISINI
         },
       ),
     );
