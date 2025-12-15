@@ -32,6 +32,9 @@ dependencies:
   supabase_flutter: ^2.12.0
   url_launcher: ^6.3.2
 
+  # --- TAMBAHAN BARU (Untuk Video Splash Screen) ---
+  video_player: ^2.8.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -47,10 +50,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Pastikan file gambar ada di lokasi yang sesuai dengan path ini
+  # Pastikan file gambar/video ada di lokasi yang sesuai dengan path ini
   assets:
     - Rise.png
-    # Jika nanti kamu buat folder assets, ubah jadi: - assets/Rise.png
+    # --- ASET VIDEO BARU ---
+    - assets/intro.mp4 
 
   fonts:
     - family: Montserrat
