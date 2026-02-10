@@ -21,50 +21,61 @@ dependencies:
   shared_preferences: ^2.2.0
   path_provider: ^2.1.0
 
-  # Utilities (Format Tanggal, ID, Keamanan)
+  # Utilities
   intl: ^0.18.1
   uuid: ^4.0.0
   local_auth: ^2.3.0
 
-  # Camera & AI (PENTING: Untuk fitur Scan Struk)
+  # Camera & AI
   image_picker: ^1.0.4
   google_mlkit_text_recognition: ^0.11.0
+  camera: ^0.10.0
+  image: ^4.0.17
+
   supabase_flutter: ^2.12.0
   url_launcher: ^6.3.2
 
-  # --- TAMBAHAN BARU (Untuk Video Splash Screen) ---
+  # Video Splash Screen
   video_player: ^2.8.2
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
 
-  # Code Generator (Untuk Hive & Lainnya)
+  # Code Generator
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
 
-  # --- TAMBAHAN BARU (Untuk Ganti Ikon Aplikasi) ---
+  # Icon Generator (Untuk ganti logo aplikasi)
   flutter_launcher_icons: "^0.13.1"
+
+# --- KONFIGURASI GENERATOR IKON ---
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
 
-  # Pastikan file gambar/video ada di lokasi yang sesuai dengan path ini
+  # Daftar aset (Gambar & Video)
   assets:
-    - Rise.png
-    # --- ASET VIDEO BARU ---
-    - assets/intro.mp4 
+    - assets/intro.mp4
+    - assets/Background.png
+    - assets/Risebg.png
+    # Saya tambahkan folder icon ini agar gambarnya juga bisa dipakai di dalam aplikasi (misal di halaman login)
+    - assets/icon/
 
+  # Daftar Font
   fonts:
     - family: Montserrat
       fonts:
         - asset: Montserrat/static/Montserrat-ExtraBold.ttf
           weight: 800
-
-# --- KONFIGURASI IKON APLIKASI ---
-flutter_launcher_icons:
-  android: "ic_launcher"
-  ios: true
-  image_path: "assets/icon/app_icon.png" # Pastikan kamu taruh gambar logomu disini!
-  min_sdk_android: 21
+        - asset: Montserrat/static/Montserrat-Bold.ttf
+          weight: 700
+        - asset: Montserrat/static/Montserrat-Medium.ttf
+          weight: 500

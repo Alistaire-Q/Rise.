@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../repository.dart';
 import '../models.dart' as m;
 
@@ -16,7 +15,7 @@ class _AddTransactionCalculatorState extends State<AddTransactionCalculator> {
   double _amount = 0.0;
   m.TransactionType _type = m.TransactionType.expense;
   int? _selectedCategoryId;
-  DateTime _selectedDate = DateTime.now();
+  final DateTime _selectedDate = DateTime.now();
 
   void _onKeyPress(String key) {
     setState(() {

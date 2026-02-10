@@ -1,7 +1,7 @@
-// lib/screens/login_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart'; // <--- Paket Baru Wajib Ada
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -10,21 +10,22 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-// Tambahkan "with WidgetsBindingObserver" di sini
 class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   bool _isLoading = false;
   late final StreamSubscription<AuthState> _authSubscription;
 
+  // --- WARNA KHUSUS DARI DESAIN ---
+  final Color _limeGreen = const Color(0xFFC6E734); // Warna "Grow Your Wealth"
+
   @override
   void initState() {
     super.initState();
-    // 1. Pasang pengamat gerak-gerik aplikasi (App Lifecycle)
     WidgetsBinding.instance.addObserver(this);
     
-    // 2. Cek session saat pertama buka
+    // Cek session saat aplikasi dibuka
     _recoverSession();
 
-    // 3. Pasang pendengar Auth (seperti sebelumnya)
+    // Listener jika status login berubah
     _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null && mounted) {
@@ -35,21 +36,18 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Copot pengamat
+    WidgetsBinding.instance.removeObserver(this);
     _authSubscription.cancel();
     super.dispose();
   }
 
-  // FUNGSI BARU: Mendeteksi saat aplikasi dibuka kembali dari Browser
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Saat aplikasi 'Resumed' (Aktif lagi), paksa cek session!
       _recoverSession();
     }
   }
 
-  // Fungsi untuk mengecek session secara manual
   Future<void> _recoverSession() async {
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null && mounted) {
@@ -57,72 +55,163 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     }
   }
 
+  // --- FUNGSI LOGIN BARU (NATIVE GOOGLE SIGN IN) ---
   Future<void> _signInWithGoogle() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Perintah Login
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        // Pastikan link ini SAMA PERSIS dengan yang ada di Supabase Dashboard
-        redirectTo: 'io.supabase.rise://login-callback', 
+      // 1. Masukkan Web Client ID yang tadi kamu dapat dari Google Cloud
+      const webClientId = '299904295450-4ijprqt5clpuu6dp0mosqhtp2ldtp95f.apps.googleusercontent.com';
+
+      // 2. Inisialisasi Google Sign In
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId: webClientId,
       );
+
+      // 3. Buka Jendela Login Native Android
+      final googleUser = await googleSignIn.signIn();
+      
+      // Jika user batal login (tekan back)
+      if (googleUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // 4. Ambil Token Otentikasi
+      final googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+      final idToken = googleAuth.idToken;
+
+      if (accessToken == null || idToken == null) {
+        throw 'Gagal mendapatkan token dari Google.';
+      }
+
+      // 5. Kirim Token ke Supabase (Login sesungguhnya)
+      await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+      // 6. Sukses! Listener di initState akan otomatis pindah ke /home
+      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Login Gagal: $e'), 
+            backgroundColor: Colors.red
+          ),
         );
       }
     } finally {
-      // Kita tidak matikan loading di sini agar user tidak bisa klik 2x
-      // Loading akan mati sendiri kalau pindah halaman
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.savings_outlined, size: 100, color: Color(0xFF059669)),
-              const SizedBox(height: 20),
-              
-              const Text(
-                'Rise Finance',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Text('Kelola keuanganmu dengan bijak'),
-              const SizedBox(height: 40),
+      // Kita pakai Stack untuk menumpuk Background Gambar dengan Konten
+      body: Stack(
+        children: [
+          // 1. BACKGROUND IMAGE (Full Layar)
+          Positioned.fill(
+            child: Image.asset(
+              'assets/Background.png', // Pastikan file ini ada di folder assets
+              fit: BoxFit.cover, // Agar gambar memenuhi layar tanpa gepeng
+            ),
+          ),
 
-              _isLoading
-                  ? const CircularProgressIndicator(color: Color(0xFF059669))
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton.icon(
-                        onPressed: _signInWithGoogle,
-                        icon: const Icon(Icons.login),
-                        label: const Text('Masuk dengan Google'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF059669),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+          // 2. KONTEN (Logo, Teks, Tombol)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 2), // Pendorong agar konten agak ke atas
+
+                  // --- LOGO ---
+                  Image.asset(
+                    'assets/Risebg.png', // Logo Rise
+                    width: 150, // Sesuaikan ukuran logo (opsional)
+                    height: 150,
+                  ),
+                  
+                  const SizedBox(height: 10),
+
+                  // --- JUDUL UTAMA ---
+                  const Text(
+                    'Rise Finance',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Montserrat', // Sesuai request
+                      fontSize: 48,
+                      fontWeight: FontWeight.w800, // ExtraBold/Bold
+                      color: Colors.white,
+                      height: 1.0, // Rapatkan jarak baris
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // --- SUB JUDUL ---
+                  Text(
+                    'Grow Your Wealth',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Montserrat', // Sesuai request
+                      fontSize: 24,
+                      fontWeight: FontWeight.w500, // Medium
+                      color: _limeGreen, // Warna C6E734
+                    ),
+                  ),
+
+                  const Spacer(flex: 3), // Ruang kosong pendorong tombol ke bawah
+
+                  // --- TOMBOL LOGIN ---
+                  _isLoading
+                      ? CircularProgressIndicator(color: _limeGreen)
+                      : SizedBox(
+                          width: double.infinity,
+                          height: 55, // Tombol agak tebal biar gagah
+                          child: ElevatedButton(
+                            onPressed: _signInWithGoogle,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF064E3B), // Hijau Gelap Background Tombol
+                              foregroundColor: Colors.white, // Warna Teks
+                              elevation: 5,
+                              side: BorderSide(color: _limeGreen, width: 1.5), // Border Hijau Muda
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16), // Sudut membulat
+                              ),
+                            ),
+                            child: const Text(
+                              'Masuk dengan Google',
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-            ],
+
+                  const SizedBox(height: 50), // Jarak dari bawah layar
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

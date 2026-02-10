@@ -67,10 +67,10 @@ class _LockScreenState extends State<LockScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock, size: 64, color: Colors.blue),
-            SizedBox(height: 24),
-            Text('Enter PIN', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
+            const Icon(Icons.lock, size: 64, color: Colors.blue),
+            const SizedBox(height: 24),
+            const Text('Enter PIN', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -78,7 +78,7 @@ class _LockScreenState extends State<LockScreen> {
                 (i) => Container(
                   width: 16,
                   height: 16,
-                  margin: EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: i < _enteredPin.length ? Colors.blue : Colors.grey.shade300,
@@ -86,12 +86,12 @@ class _LockScreenState extends State<LockScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             if (_showError)
-              Text('Incorrect PIN', style: TextStyle(color: Colors.red, fontSize: 14))
+              const Text('Incorrect PIN', style: TextStyle(color: Colors.red, fontSize: 14))
             else
-              SizedBox(height: 20),
-            SizedBox(height: 24),
+              const SizedBox(height: 20),
+            const SizedBox(height: 24),
             // PIN Pad
             GridView.count(
               crossAxisCount: 3,
@@ -107,12 +107,12 @@ class _LockScreenState extends State<LockScreen> {
                     _buildPinButton('⌫', _removeDigit, isDelete: true),
                   ],
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             if (security.biometricAvailable && security.biometricEnabled)
               ElevatedButton.icon(
                 onPressed: _attemptBiometric,
-                icon: Icon(Icons.fingerprint),
-                label: Text('Use Biometric'),
+                icon: const Icon(Icons.fingerprint),
+                label: const Text('Use Biometric'),
               ),
           ],
         ),

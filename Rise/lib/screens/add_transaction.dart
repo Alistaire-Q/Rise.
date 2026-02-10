@@ -1,15 +1,26 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui'; // Masih di-keep jika ada sisa penggunaan, tapi ImageFilter sudah dihapus
+import 'dart:math' as math;
 import '../currency_provider.dart';
 import '../repository.dart';
+import '../ocr_service.dart'; // Pastikan file ini ada dan class ReceiptOcrHelper ada di dalamnya
 import 'package:rise/models.dart' as m;
 
 class AddTransactionScreen extends StatefulWidget {
   final m.TransactionType? initialType;
+  final double? initialAmount;
+  final String? initialAmountString;
+  final String? initialMerchant;
+  final DateTime? initialDate;
 
-  const AddTransactionScreen({Key? key, this.initialType}) : super(key: key);
+  const AddTransactionScreen({
+    Key? key,
+    this.initialType,
+    this.initialAmount,
+    this.initialAmountString,
+    this.initialMerchant,
+    this.initialDate,
+  }) : super(key: key);
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -18,7 +29,7 @@ class AddTransactionScreen extends StatefulWidget {
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountCtrl = TextEditingController();
-  final _notesCtrl = TextEditingController();
+  
 
   late m.TransactionType _type;
   int? _accountId;
@@ -30,12 +41,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void initState() {
     super.initState();
     _type = widget.initialType ?? m.TransactionType.expense;
+
+    // Prefill data dari OCR jika ada
+    if (widget.initialAmountString != null && widget.initialAmountString!.isNotEmpty) {
+      _amountCtrl.text = widget.initialAmountString!;
+    } else if (widget.initialAmount != null) {
+      _amountCtrl.text = widget.initialAmount!.toStringAsFixed(2);
+    }
+
+    if (widget.initialMerchant != null && widget.initialMerchant!.isNotEmpty) {
+    }
+    if (widget.initialDate != null) {
+      _selectedDate = widget.initialDate!;
+    }
   }
 
   @override
   void dispose() {
     _amountCtrl.dispose();
-    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -43,12 +66,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (_formKey.currentState!.validate()) {
       final repo = Provider.of<Repository>(context, listen: false);
       final currencyProvider = Provider.of<CurrencyProvider>(context, listen: false);
-      
-      // Parse input amount
-      double inputAmount = double.parse(_amountCtrl.text);
-      
-      // Konversi ke USD sebelum save
-      double amountInUsd = currencyProvider.convertToUsd(inputAmount);
+
+      // Normalisasi input angka (misal: "10.000" jadi 10000)
+      final rawInput = _amountCtrl.text.trim();
+      // Pastikan ReceiptOcrHelper ada di ocr_service.dart
+      final normalized = ReceiptOcrHelper.normalizeNumberString(rawInput);
+      final parsed = double.tryParse(normalized);
+
+      if (parsed == null || parsed <= 0) {
+        _showSnackBar('Enter a valid amount');
+        return;
+      }
+      final amountInUsd = currencyProvider.convertToUsd(parsed);
 
       if (_type == m.TransactionType.transfer) {
         if (_accountId == null) {
@@ -64,14 +93,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           return;
         }
 
-        // Validate sufficient balance
         final sourceAccount = repo.getAccountById(_accountId!);
         if (sourceAccount == null || sourceAccount.balance < amountInUsd) {
           _showSnackBar('Insufficient balance in source account.');
           return;
         }
 
-        // Execute atomic transfer
         final transferSuccess = await repo.executeAtomicTransfer(
           sourceAccountId: _accountId!,
           destinationAccountId: _targetAccountId!,
@@ -93,18 +120,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           return;
         }
 
-        // Update account balance for income/expense
         final account = repo.getAccountById(_accountId!);
         if (account != null) {
           double newBalance = account.balance;
           if (_type == m.TransactionType.income) {
-            newBalance += amountInUsd; // Add income
+            newBalance += amountInUsd;
           } else if (_type == m.TransactionType.expense) {
             if (account.balance < amountInUsd) {
               _showSnackBar('Insufficient balance for this expense.');
               return;
             }
-            newBalance -= amountInUsd; // Subtract expense
+            newBalance -= amountInUsd;
           }
           await repo.updateAccountBalance(_accountId!, newBalance);
         }
@@ -117,9 +143,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         targetAccountId: _targetAccountId,
         categoryId: _categoryId,
         date: _selectedDate,
-        notes: _notesCtrl.text,
       );
+      
       await repo.addTransaction(t);
+      
       if (mounted) {
         Navigator.of(context).pop();
       }
@@ -147,312 +174,342 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final categories = _getCategories(repo);
 
     final categoryOptions = _type == m.TransactionType.transfer
-        ? [m.Category(id: 1, name: 'Between Accounts', icon: null)] 
+        ? [m.Category(id: 1, name: 'Between Accounts', icon: null)]
         : repo.categories.where((c) => categories.contains(c.name)).toList();
 
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: Colors.transparent, // Background dialog transparan, konten diatur Container
-      // FIX: Menghapus properti filter yang menyebabkan error
-      
-      child: Container(
-        decoration: BoxDecoration(
-            color: Colors.white, // UBAH: Menjadi Putih Polos
-            borderRadius: BorderRadius.circular(20),
-            // Border tipis abu-abu agar rapi di background putih
-            border: Border.all(color: Colors.grey.withOpacity(0.2)), 
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header and Close Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _type == m.TransactionType.expense
-                              ? 'Add Expense'
-                              : _type == m.TransactionType.income
-                                  ? 'Add Income'
-                                  : 'Add Transfer',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold, color: Colors.black), // Text Hitam
-                        ),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200], // Background tombol close abu muda
-                              shape: BoxShape.circle,
-                            ),
-                            padding: const EdgeInsets.all(8),
-                            child: const Icon(Icons.close, size: 20, color: Colors.black), // Icon Hitam
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    
-
-                    // Type Selector Segmented Button 
-                    SegmentedButton<m.TransactionType>(
-                      segments: const [
-                        ButtonSegment(value: m.TransactionType.income, label: Text('Income')),
-                        ButtonSegment(value: m.TransactionType.expense, label: Text('Expense')),
-                        ButtonSegment(value: m.TransactionType.transfer, label: Text('Transfer')),
-                      ],
-                      selected: {_type},
-                      onSelectionChanged: (newSelection) {
-                        setState(() {
-                          _type = newSelection.first;
-                          _categoryId = null;
-                          _targetAccountId = null;
-                          _amountCtrl.clear();
-                          _accountId = null;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Amount Field
-                    Text('Amount *', style: theme.textTheme.labelLarge?.copyWith(color: Colors.black)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _amountCtrl,
-                      style: theme.textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold, color: Colors.black), // Input Text Hitam
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        hintText: '0.00',
-                        hintStyle: TextStyle(color: Colors.grey[400]), // Hint Abu-abu
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 12, right: 8),
-                          child: Column(
-                             mainAxisAlignment: MainAxisAlignment.center,
-                             children: [
-                                Text(
-                                  '${currencyProvider.selectedCurrency.code.toUpperCase()} (${currencyProvider.selectedCurrency.symbol})',
-                                  style: const TextStyle(color: Colors.black, fontSize: 14), // Currency Hitam
-                                  overflow: TextOverflow.ellipsis,
+      backgroundColor: Colors.transparent, 
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxWidth = math.min(constraints.maxWidth * 0.95, 380.0);
+          
+          return Center(
+            child: SizedBox(
+              width: maxWidth,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white, // Putih polos sesuai request
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header and Close Button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _type == m.TransactionType.expense
+                                    ? 'Add Expense'
+                                    : _type == m.TransactionType.income
+                                        ? 'Add Income'
+                                        : 'Add Transfer',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(8),
+                                  child: const Icon(Icons.close,
+                                      size: 20, color: Colors.black),
                                 ),
-                             ],
+                              ),
+                            ],
                           ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                      ),
-                      validator: (v) => v == null || v.isEmpty || double.tryParse(v) == null || double.parse(v) <= 0
-                          ? 'Enter a valid amount'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
+                          const SizedBox(height: 24),
 
-                    // Category Dropdown
-                    if (_type != m.TransactionType.transfer) ...[
-                      Text('Category *', style: theme.textTheme.labelLarge?.copyWith(color: Colors.black)),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<int>(
-                        value: _categoryId,
-                        hint: Text(
-                          _type == m.TransactionType.expense
-                              ? 'Select expense category'
-                              : 'Select income category',
-                          style: TextStyle(color: Colors.grey[600]), // Hint Abu gelap
-                        ),
-                        items: categoryOptions
-                            .map((c) => DropdownMenuItem<int>(
-                                  value: c.id,
-                                  child: Text(c.name, style: const TextStyle(color: Colors.black)), // Item Hitam
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() => _categoryId = value);
-                        },
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          // Type Selector
+                          SegmentedButton<m.TransactionType>(
+                            segments: const [
+                              ButtonSegment(
+                                  value: m.TransactionType.income,
+                                  label: Text('Income')),
+                              ButtonSegment(
+                                  value: m.TransactionType.expense,
+                                  label: Text('Expense')),
+                              ButtonSegment(
+                                  value: m.TransactionType.transfer,
+                                  label: Text('Transfer')),
+                            ],
+                            selected: {_type},
+                            onSelectionChanged: (newSelection) {
+                              setState(() {
+                                _type = newSelection.first;
+                                _categoryId = null;
+                                _targetAccountId = null;
+                                _amountCtrl.clear();
+                                _accountId = null;
+                              });
+                            },
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          const SizedBox(height: 24),
+
+                          // Amount Field
+                          Text('Amount *',
+                              style: theme.textTheme.labelLarge
+                                  ?.copyWith(color: Colors.black)),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _amountCtrl,
+                            style: theme.textTheme.displaySmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: InputDecoration(
+                              hintText: '0.00',
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                              prefixIcon: Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 12, right: 8),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${currencyProvider.selectedCurrency.code.toUpperCase()} (${currencyProvider.selectedCurrency.symbol})',
+                                      style: const TextStyle(
+                                          color: Colors.black, fontSize: 14),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                            ),
+                            validator: (v) => v == null ||
+                                    v.isEmpty ||
+                                    double.tryParse(ReceiptOcrHelper.normalizeNumberString(v)) == null 
+                                ? 'Enter a valid amount'
+                                : null,
                           ),
-                        ),
-                        dropdownColor: Colors.white, // Dropdown bg Putih
-                        style: const TextStyle(color: Colors.black),
-                        validator: (v) => v == null ? 'Select a category' : null,
-                      ),
-                      const SizedBox(height: 16),
-                    ] else ...[
-                      Text('Category *', style: theme.textTheme.labelLarge?.copyWith(color: Colors.black)),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.swap_horiz, color: const Color(0xFF0B3D2E)), // Ikon hijau tua
-                            const SizedBox(width: 12),
-                            Text('Between Accounts',
-                                style: theme.textTheme.bodyLarge?.copyWith(color: Colors.black)),
+                          const SizedBox(height: 16),
+
+                          // Logic untuk menampilkan Category / Between Accounts
+                          if (_type != m.TransactionType.transfer) ...[
+                            Text('Category *',
+                                style: theme.textTheme.labelLarge
+                                    ?.copyWith(color: Colors.black)),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<int>(
+                              initialValue: _categoryId,
+                              hint: Text(
+                                _type == m.TransactionType.expense
+                                    ? 'Select expense category'
+                                    : 'Select income category',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                              items: categoryOptions
+                                  .map((c) => DropdownMenuItem<int>(
+                                        value: c.id,
+                                        child: Text(c.name,
+                                            style: const TextStyle(
+                                                color: Colors.black)),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() => _categoryId = value);
+                              },
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                              ),
+                              dropdownColor: Colors.white,
+                              style: const TextStyle(color: Colors.black),
+                              validator: (v) =>
+                                  v == null ? 'Select a category' : null,
+                            ),
+                            const SizedBox(height: 16),
+                          ] else ...[
+                            // Tampilan "Between Accounts" untuk Transfer
+                            Text('Category *',
+                                style: theme.textTheme.labelLarge
+                                    ?.copyWith(color: Colors.black)),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 16),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey[300]!),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.swap_horiz,
+                                      color: Color(0xFF0B3D2E)),
+                                  const SizedBox(width: 12),
+                                  Text('Between Accounts',
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(color: Colors.black)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                           ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
 
-                    // From Account Dropdown
-                    Text(
-                      _type == m.TransactionType.transfer ? 'From Account *' : 'Account *',
-                      style: theme.textTheme.labelLarge?.copyWith(color: Colors.black),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<int>(
-                      value: _accountId,
-                      hint: Text('Select account',
-                          style: TextStyle(color: Colors.grey[600])),
-                      items: repo.accounts
-                          .map((a) => DropdownMenuItem<int>(
-                                value: a.id,
-                                child: Text('${a.name} - ${currencyProvider.formatAmount(a.balance)}', 
-                                    style: const TextStyle(color: Colors.black)),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _accountId = value;
-                          if (_type == m.TransactionType.transfer &&
-                              _targetAccountId == value) {
-                            _targetAccountId = null;
-                          }
-                        });
-                      },
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                      ),
-                      dropdownColor: Colors.white,
-                      style: const TextStyle(color: Colors.black),
-                      validator: (v) => v == null ? 'Select an account' : null,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // To Account Dropdown (Transfer only)
-                    if (_type == m.TransactionType.transfer) ...[
-                      Text('To Account *',
-                          style: theme.textTheme.labelLarge?.copyWith(color: Colors.black)),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<int>(
-                        value: _targetAccountId,
-                        hint: Text('Select destination account',
-                            style: TextStyle(color: Colors.grey[600])),
-                        items: repo.accounts
-                            .where((a) => a.id != _accountId)
-                            .map((a) => DropdownMenuItem<int>(
-                                  value: a.id,
-                                  child: Text('${a.name} - ${currencyProvider.formatAmount(a.balance)}',
-                                    style: const TextStyle(color: Colors.black)),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() => _targetAccountId = value);
-                        },
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          // From Account Dropdown
+                          Text(
+                            _type == m.TransactionType.transfer
+                                ? 'From Account *'
+                                : 'Account *',
+                            style: theme.textTheme.labelLarge
+                                ?.copyWith(color: Colors.black),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey[300]!),
-                          ),
-                        ),
-                        dropdownColor: Colors.white,
-                        style: const TextStyle(color: Colors.black),
-                        validator: (v) => v == null ? 'Select destination account' : null,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // Notes Field
-                    Text('Note (Optional)',
-                        style: theme.textTheme.labelLarge?.copyWith(color: Colors.black)),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _notesCtrl,
-                      maxLines: 3,
-                      style: const TextStyle(color: Colors.black), // Text Hitam
-                      decoration: InputDecoration(
-                        hintText: 'Add a note...',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Action Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: Colors.grey[400]!), // Border Abu
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<int>(
+                            initialValue: _accountId,
+                            hint: Text('Select account',
+                                style: TextStyle(color: Colors.grey[600])),
+                            items: repo.accounts
+                                .map((a) => DropdownMenuItem<int>(
+                                      value: a.id,
+                                      child: Text(
+                                          '${a.name} - ${currencyProvider.formatAmount(a.balance)}',
+                                          style: const TextStyle(
+                                              color: Colors.black)),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _accountId = value;
+                                if (_type == m.TransactionType.transfer &&
+                                    _targetAccountId == value) {
+                                  _targetAccountId = null;
+                                }
+                              });
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey[300]!),
+                              ),
                             ),
-                            child: const Text('Cancel', style: TextStyle(color: Colors.black)), // Text Hitam
+                            dropdownColor: Colors.white,
+                            style: const TextStyle(color: Colors.black),
+                            validator: (v) =>
+                                v == null ? 'Select an account' : null,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _saveTransaction,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B3D2E), // Hijau gelap
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                          const SizedBox(height: 16),
+
+                          // To Account Dropdown (Khusus Transfer)
+                          if (_type == m.TransactionType.transfer) ...[
+                            Text('To Account *',
+                                style: theme.textTheme.labelLarge
+                                    ?.copyWith(color: Colors.black)),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<int>(
+                              initialValue: _targetAccountId,
+                              hint: Text('Select destination account',
+                                  style: TextStyle(color: Colors.grey[600])),
+                              items: repo.accounts
+                                  .where((a) => a.id != _accountId)
+                                  .map((a) => DropdownMenuItem<int>(
+                                        value: a.id,
+                                        child: Text(
+                                            '${a.name} - ${currencyProvider.formatAmount(a.balance)}',
+                                            style: const TextStyle(
+                                                color: Colors.black)),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() => _targetAccountId = value);
+                              },
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.grey[300]!),
+                                ),
+                              ),
+                              dropdownColor: Colors.white,
+                              style: const TextStyle(color: Colors.black),
+                              validator: (v) => v == null
+                                  ? 'Select destination account'
+                                  : null,
                             ),
-                            child: const Text(
-                              'Add Transaction',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
+                            const SizedBox(height: 16),
+                          ],
+
+                          const SizedBox(height: 24),
+
+                          // Action Buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        color: Colors.grey[400]!), // Border Abu
+                                  ),
+                                  child: const Text('Cancel',
+                                      style: TextStyle(color: Colors.black)),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: _saveTransaction,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        const Color(0xFF0B3D2E), // Hijau gelap
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                  child: const Text(
+                                    'Add Transaction',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
+      ),
     );
   }
 }

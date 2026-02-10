@@ -205,7 +205,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Text('From Account *', style: theme.textTheme.labelLarge?.copyWith(color: Colors.white)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<int>(
-                      value: _sourceAccountId,
+                      initialValue: _sourceAccountId,
                       enabled: !_isTransferring,
                       hint: Text('Select source', style: TextStyle(color: Colors.white.withOpacity(0.7))),
                       items: repo.accounts
@@ -238,7 +238,7 @@ class _TransferScreenState extends State<TransferScreen> {
                     Text('To Account *', style: theme.textTheme.labelLarge?.copyWith(color: Colors.white)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<int>(
-                      value: _destinationAccountId,
+                      initialValue: _destinationAccountId,
                       enabled: !_isTransferring,
                       hint: Text('Select destination', style: TextStyle(color: Colors.white.withOpacity(0.7))),
                       items: repo.accounts

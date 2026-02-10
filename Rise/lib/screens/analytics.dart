@@ -403,7 +403,7 @@ class DonutChartPainterWithLabels extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final strokeWidth = 50.0; 
+    const strokeWidth = 50.0; 
     final radius = (size.width - strokeWidth) / 2;
 
     double startAngle = -pi / 2;

@@ -71,7 +71,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               controller: _pinCtrl,
               obscureText: true,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Enter PIN',
                 border: OutlineInputBorder(),
               ),
@@ -81,7 +81,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               controller: _confirmCtrl,
               obscureText: true,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Confirm PIN',
                 border: OutlineInputBorder(),
               ),

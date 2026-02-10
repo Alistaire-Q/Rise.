@@ -10,7 +10,8 @@ import 'security_provider.dart';
 import 'currency_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home.dart';
-import 'screens/login_screen.dart'; // <--- 1. IMPORT BARU DITAMBAHKAN DISINI
+import 'screens/login_screen.dart';
+import 'ocr_service.dart'; // <--- added
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +23,6 @@ void main() async {
   );
 
   // --- SETUP DATABASE HIVE (LOCAL) ---
-  // (Kode lama tetap aman di bawah ini)
   
   // 1. Inisialisasi Hive
   await Hive.initFlutter();
@@ -79,6 +79,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<Repository>.value(value: repository),
         ChangeNotifierProvider<SecurityProvider>.value(value: security),
         ChangeNotifierProvider<CurrencyProvider>.value(value: currency),
+        Provider<OcrService>( // <--- added provider so UI can open camera
+          create: (_) => OcrService(),
+          dispose: (_, service) => service.dispose(),
+        ),
       ],
       child: MaterialApp(
         title: 'Rise',

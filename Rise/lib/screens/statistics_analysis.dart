@@ -66,9 +66,9 @@ class StatisticsAnalysis extends StatelessWidget {
                             Container(
                               width: 140,
                               height: 140,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: const Color(0xFFF5F5F5),
+                                color: Color(0xFFF5F5F5),
                               ),
                             ),
                             Column(

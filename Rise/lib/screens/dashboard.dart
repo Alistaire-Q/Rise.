@@ -136,7 +136,7 @@ class DashboardScreen extends StatelessWidget {
                                 icon: Icons.arrow_downward,
                                 iconColor: const Color(0xFF2ECC71),
                                 bgColor: cardBg,
-                                currencyProvider: currencyProvider, // FIX: Tambahkan parameter
+                                currencyProvider: currencyProvider,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -147,7 +147,7 @@ class DashboardScreen extends StatelessWidget {
                                 icon: Icons.arrow_upward,
                                 iconColor: const Color(0xFFFF6B6B),
                                 bgColor: cardBg,
-                                currencyProvider: currencyProvider, // FIX: Tambahkan parameter
+                                currencyProvider: currencyProvider,
                               ),
                             ),
                           ],
@@ -251,10 +251,11 @@ class DashboardScreen extends StatelessWidget {
                             itemBuilder: (ctx, idx) {
                               final tx = todayTransactions[idx];
                               return _buildTransactionTile(
+                                ctx, // pass context for dialogs
                                 tx,
                                 repo,
                                 cardBg,
-                                currencyProvider, // FIX: Tambahkan parameter
+                                currencyProvider,
                               );
                             },
                           ),
@@ -278,7 +279,7 @@ class DashboardScreen extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
     required Color bgColor,
-    required CurrencyProvider currencyProvider, // FIX: Tambahkan parameter
+    required CurrencyProvider currencyProvider,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -356,10 +357,11 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildTransactionTile(
+    BuildContext context,
     m.MoneyTransaction tx,
     Repository repo,
     Color tileBgColor,
-    CurrencyProvider currencyProvider, // FIX: Tambahkan parameter
+    CurrencyProvider currencyProvider,
   ) {
     final isIncome = tx.type == m.TransactionType.income;
     final isTransfer = tx.type == m.TransactionType.transfer;
@@ -378,55 +380,76 @@ class DashboardScreen extends StatelessWidget {
           .name;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tileBgColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              isIncome
-                  ? Icons.arrow_downward
-                  : (isTransfer ? Icons.swap_horiz : Icons.arrow_upward),
-              color: isIncome ? const Color(0xFF0B3D2E) : Colors.black54,
-              size: 20,
-            ),
+    return GestureDetector(
+      onLongPress: () async {
+        final confirm = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Delete transaction?'),
+            content: const Text('This will reverse the transaction and update account balances.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  categoryName,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  DateFormat('d MMM, HH:mm').format(tx.date ?? DateTime.now()),
-                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                ),
-              ],
+        );
+        if (confirm == true && tx.id != null) {
+          await repo.deleteTransaction(tx.id!);
+          // PERBAIKAN: Gunakan context.mounted karena ini StatelessWidget
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaction deleted')));
+          }
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: tileBgColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                // Transfers keep swap icon; income should show UP, expense should show DOWN
+                isTransfer ? Icons.swap_horiz : (isIncome ? Icons.arrow_upward : Icons.arrow_downward),
+                color: isIncome ? const Color(0xFF0B3D2E) : Colors.black54,
+                size: 20,
+              ),
             ),
-          ),
-          Text(
-            '${isIncome || isTransfer ? '+' : '-'}${currencyProvider.formatAmount(tx.amount)}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-              color: isIncome ? const Color(0xFF0B3D2E) : Colors.black87,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    categoryName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('d MMM, HH:mm').format(tx.date ?? DateTime.now()),
+                    style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Text(
+              '${isIncome || isTransfer ? '+' : '-'}${currencyProvider.formatAmount(tx.amount)}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: isIncome ? const Color(0xFF0B3D2E) : Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

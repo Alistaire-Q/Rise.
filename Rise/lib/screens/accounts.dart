@@ -17,9 +17,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
   final _balanceCtrl = TextEditingController();
   int? _expandedAccountId;
 
-  // Warna Tema (Diperbarui sesuai desain baru)
+  // Warna Tema
   final Color _darkGreen = const Color(0xFF052e23);
-  final Color _limeAccent = const Color(0xFFC5F244); // Warna lime dari kartu Rise
+  final Color _limeAccent = const Color(0xFFC5F244);
 
   @override
   void dispose() {
@@ -40,7 +40,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     await repo.addAccount(account);
     _nameCtrl.clear();
     _balanceCtrl.clear();
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
   void _showAddAccountDialog() {
@@ -59,18 +59,19 @@ class _AccountsScreenState extends State<AccountsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Add Account', 
+              Text(
+                'Add Account',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: _darkGreen
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: _darkGreen,
+                    ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               TextField(
                 controller: _nameCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Account Name', 
+                  labelText: 'Account Name',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
                 ),
@@ -80,14 +81,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 controller: _balanceCtrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Initial Balance', 
+                  labelText: 'Initial Balance',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.attach_money),
                 ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _addAccount, 
+                onPressed: _addAccount,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _darkGreen,
                   foregroundColor: Colors.white,
@@ -105,13 +106,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  // ... Logic Methods (Tidak Berubah) ...
+  // --- Logic Methods ---
   List<m.MoneyTransaction> _getAccountTransactions(int accountId) {
-    return Provider.of<Repository>(context)
-        .transactions
+    final repo = Provider.of<Repository>(context, listen: false);
+    final list = repo.transactions
         .where((t) => t.accountId == accountId || t.targetAccountId == accountId)
-        .toList()
-      ..sort((a, b) => (b.date ?? DateTime.now()).compareTo(a.date ?? DateTime.now()));
+        .toList();
+    list.sort((a, b) => (b.date ?? DateTime.now()).compareTo(a.date ?? DateTime.now()));
+    return list;
   }
 
   String _getTransactionLabel(m.MoneyTransaction tx, int accountId) {
@@ -167,14 +169,27 @@ class _AccountsScreenState extends State<AccountsScreen> {
     return '';
   }
 
+  Map<String, dynamic> _getAccountIcon(String accountName) {
+    switch (accountName.toLowerCase()) {
+      case 'cash':
+        return {'icon': Icons.wallet, 'color': const Color(0xFF2ECC71)};
+      case 'bank':
+        return {'icon': Icons.account_balance, 'color': const Color(0xFF00B4D8)};
+      case 'digital wallet':
+        return {'icon': Icons.smartphone, 'color': const Color(0xFF9C27B0)};
+      default:
+        return {'icon': Icons.account_balance_wallet, 'color': const Color(0xFF1E88E5)};
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = Provider.of<Repository>(context);
     final currencyProvider = Provider.of<CurrencyProvider>(context);
-    final totalBalance = repo.accounts.fold<double>(0, (sum, acc) => sum + (acc.balance ?? 0));
+    final totalBalance = repo.accounts.fold<double>(0, (sum, acc) => sum + (acc.balance));
 
     return Scaffold(
-      backgroundColor: Colors.white, // Background putih sesuai desain baru
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -182,7 +197,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. RISE CARD - Kartu Hijau Lime di Atas
+                // 1. RISE CARD
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
@@ -193,7 +208,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Rise Title
                       const Text(
                         'Rise',
                         style: TextStyle(
@@ -203,8 +217,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
-                      // Total Net Worth Amount
                       Text(
                         currencyProvider.formatAmount(totalBalance),
                         style: const TextStyle(
@@ -215,8 +227,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
-                      // Label
                       Text(
                         'Your Total Networth',
                         style: TextStyle(
@@ -228,10 +238,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     ],
                   ),
                 ),
-                
                 const SizedBox(height: 28),
-
-                // 2. YOUR ACCOUNTS HEADER
+                
+                // 2. HEADER
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -243,8 +252,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         color: Colors.black87,
                       ),
                     ),
-                    
-                    // Tombol Add
                     InkWell(
                       onTap: _showAddAccountDialog,
                       borderRadius: BorderRadius.circular(20),
@@ -283,9 +290,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   itemBuilder: (ctx, idx) {
                     final account = repo.accounts[idx];
                     final isExpanded = _expandedAccountId == account.id;
-                    final transactions = _getAccountTransactions(account.id!);
-                    
-                    // Custom Icon Logic
+                    final transactions = _getAccountTransactions(account.id ?? 0);
                     final iconData = _getAccountIcon(account.name);
 
                     return Container(
@@ -296,7 +301,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       ),
                       child: Column(
                         children: [
-                          // Account Card Header
                           InkWell(
                             onTap: () {
                               setState(() {
@@ -308,7 +312,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                               padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
-                                  // Account Icon Container
                                   Container(
                                     width: 48,
                                     height: 48,
@@ -330,8 +333,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 14),
-                                  
-                                  // Account Info
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,13 +357,11 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                       ],
                                     ),
                                   ),
-                                  
-                                  // Balance & Expand Icon
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        currencyProvider.formatAmount(account.balance ?? 0),
+                                        currencyProvider.formatAmount(account.balance),
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15,
@@ -371,9 +370,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Icon(
-                                        isExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
+                                        isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                                         size: 20,
                                         color: Colors.grey[400],
                                       ),
@@ -383,8 +380,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                               ),
                             ),
                           ),
-
-                          // Expanded Transactions List
                           AnimatedCrossFade(
                             firstChild: Container(height: 0),
                             secondChild: Column(
@@ -406,10 +401,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                                 const SizedBox(height: 8),
                                                 Text(
                                                   'No transactions yet',
-                                                  style: TextStyle(
-                                                    color: Colors.grey[400],
-                                                    fontSize: 13
-                                                  ),
+                                                  style: TextStyle(color: Colors.grey[400], fontSize: 13),
                                                 ),
                                               ],
                                             ),
@@ -420,18 +412,17 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                           physics: const NeverScrollableScrollPhysics(),
                                           itemCount: transactions.length,
                                           separatorBuilder: (_, __) => Divider(
-                                            height: 1, 
-                                            color: Colors.grey[100], 
-                                            indent: 16, 
-                                            endIndent: 16
+                                            height: 1,
+                                            color: Colors.grey[100],
+                                            indent: 16,
+                                            endIndent: 16,
                                           ),
                                           itemBuilder: (_, tidx) {
                                             final tx = transactions[tidx];
                                             final isIncome = tx.type == m.TransactionType.income ||
-                                                (tx.type == m.TransactionType.transfer &&
-                                                    tx.targetAccountId == account.id);
-                                            final color = _getTransactionColor(tx, account.id!);
-                                            final label = _getTransactionLabel(tx, account.id!);
+                                                (tx.type == m.TransactionType.transfer && tx.targetAccountId == account.id);
+                                            final color = _getTransactionColor(tx, account.id ?? 0);
+                                            final label = _getTransactionLabel(tx, account.id ?? 0);
                                             final destAccountName = _getDestinationAccountName(tx, repo);
 
                                             return ListTile(
@@ -443,28 +434,61 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Icon(
-                                                  _getTransactionIcon(tx, account.id!),
+                                                  _getTransactionIcon(tx, account.id ?? 0),
                                                   color: color,
                                                   size: 16,
                                                 ),
                                               ),
                                               title: Text(
-                                                tx.type == m.TransactionType.transfer
-                                                    ? '$label to $destAccountName'
-                                                    : label,
+                                                tx.type == m.TransactionType.transfer ? '$label to $destAccountName' : label,
                                                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                                               ),
                                               subtitle: Text(
                                                 DateFormat('MMM d, HH:mm').format(tx.date ?? DateTime.now()),
                                                 style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                                               ),
-                                              trailing: Text(
-                                                '${isIncome ? '+' : '-'}${currencyProvider.formatAmount(tx.amount)}',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: isIncome ? Colors.green[600] : Colors.red[400],
-                                                  fontSize: 13,
-                                                ),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    '${isIncome ? '+' : '-'}${currencyProvider.formatAmount(tx.amount)}',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: isIncome ? Colors.green[600] : Colors.red[400],
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  IconButton(
+                                                    icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                                    onPressed: () async {
+                                                      final confirm = await showDialog<bool>(
+                                                        context: context,
+                                                        builder: (_) => AlertDialog(
+                                                          title: const Text('Delete transaction?'),
+                                                          content: const Text(
+                                                              'This will reverse the transaction and update account balances.'),
+                                                          actions: [
+                                                            TextButton(
+                                                                onPressed: () => Navigator.pop(context, false),
+                                                                child: const Text('Cancel')),
+                                                            TextButton(
+                                                                onPressed: () => Navigator.pop(context, true),
+                                                                child: const Text('Delete')),
+                                                          ],
+                                                        ),
+                                                      );
+                                                      if (confirm == true && tx.id != null) {
+                                                        await Provider.of<Repository>(context, listen: false)
+                                                            .deleteTransaction(tx.id!);
+                                                        if (mounted) {
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text('Transaction deleted')));
+                                                        }
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             );
                                           },
@@ -480,46 +504,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     );
                   },
                 ),
-                
-                // Extra space for bottom navigation
-                const SizedBox(height: 100), 
+                const SizedBox(height: 100),
               ],
             ),
           ),
         ),
       ),
     );
-  }
-
-  // Format balance dengan koma sebagai separator desimal (sesuai gambar)
-  String _formatBalance(double balance) {
-    // Format: $0,00 (menggunakan koma seperti di gambar Rise card)
-    String formatted = balance.toStringAsFixed(2);
-    return formatted.replaceAll('.', ',');
-  }
-
-  Map<String, dynamic> _getAccountIcon(String accountName) {
-    switch (accountName.toLowerCase()) {
-      case 'cash':
-        return {
-          'icon': Icons.wallet,
-          'color': const Color(0xFF2ECC71),
-        };
-      case 'bank':
-        return {
-          'icon': Icons.account_balance,
-          'color': const Color(0xFF00B4D8),
-        };
-      case 'digital wallet':
-        return {
-          'icon': Icons.smartphone,
-          'color': const Color(0xFF9C27B0),
-        };
-      default:
-        return {
-          'icon': Icons.account_balance_wallet,
-          'color': const Color(0xFF1E88E5),
-        };
-    }
   }
 }

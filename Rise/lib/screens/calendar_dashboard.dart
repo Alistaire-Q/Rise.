@@ -140,7 +140,7 @@ class _CalendarDashboardState extends State<CalendarDashboard> {
 
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFEEEEEE), width: 0.5))),
+                  decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 0.5))),
                   child: Row(
                     children: [
                       Container(

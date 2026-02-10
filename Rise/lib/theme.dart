@@ -9,12 +9,10 @@ class AppTheme {
       primary: Color(0xFF006A6A),
       secondary: Color(0xFF4A6363),
       surface: Color(0xFFF7FAF9),
-      background: Colors.white,
       error: Color(0xFFBA1A1A),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Color(0xFF171D1D),
-      onBackground: Color(0xFF171D1D),
       onError: Colors.white,
     ),
     scaffoldBackgroundColor: Colors.white,
@@ -67,8 +65,8 @@ class AppTheme {
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0))),
-        side: MaterialStateProperty.all(const BorderSide(color: Color(0xFFC1C7C7))),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0))),
+        side: WidgetStateProperty.all(const BorderSide(color: Color(0xFFC1C7C7))),
       )
     )
   );
