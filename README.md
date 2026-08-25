@@ -187,20 +187,19 @@ Rise uses the **Provider Pattern** architecture, which is simple yet scalable:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                    UI Layer                      │
-│  (Screens: Dashboard, Analytics, Settings, etc.) │
+│                    UI Layer                     │
+│  (Screens: Dashboard, Analytics, Settings, etc.)│
 ├─────────────────────────────────────────────────┤
-│                Provider Layer                    │
-│         Repository │ CurrencyProvider             │
+│                Provider Layer                   │
+│         Repository │ CurrencyProvider           │
 ├─────────────────────────────────────────────────┤
-│               Service Layer                      │
-│     TransferService │ OcrService │ AuditLogger    │
+│               Service Layer                     │
+│     TransferService │ OcrService │ AuditLogger  │
 ├─────────────────────────────────────────────────┤
-│                Data Layer                        │
-│        Hive Boxes │ Supabase │ SharedPrefs        │
+│                Data Layer                       │
+│        Hive Boxes │ Supabase │ SharedPrefs      │
 └─────────────────────────────────────────────────┘
 ```
-
 ### Data Flow
 
 1. **UI** calls methods on the **Provider/Repository**
@@ -330,14 +329,14 @@ OAuth Client ID is pre-configured in [`lib/screens/login_screen.dart`](Rise/lib/
 │  Splash      │ ──► │  Login       │ ──► │  Home        │
 │  (Video)     │     │  (Google)    │     │  (Dashboard) │
 └──────────────┘     └──────────────┘     └──────┬───────┘
-                                                  │
-                          ┌───────────────────────┼───────────────────────┐
-                          │                       │                       │
+                                                 │
+                          ┌──────────────────────┼──────────────────────┐
+                          │                      │                      │
                    ┌──────▼──────┐        ┌──────▼──────┐        ┌──────▼──────┐
                    │  Analytics  │        │  Scan       │        │  Accounts   │
                    │  (Charts)   │        │  (Camera)   │        │  (Wallet)   │
                    └─────────────┘        └──────┬──────┘        └─────────────┘
-                                                  │
+                                                 │
                                           ┌──────▼──────┐
                                           │  Add        │
                                           │  Transaction│
