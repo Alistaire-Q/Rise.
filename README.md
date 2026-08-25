@@ -19,7 +19,7 @@
   <a href="https://pub.dev/packages/hive"><img src="https://img.shields.io/badge/Hive-Local_DB-FFD700?logo=hive&logoColor=black" alt="Hive" /></a>
   <img src="https://img.shields.io/badge/Version-1.0.0-brightgreen" alt="Version" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
-  <a href="https://github.com/Alistaire-Q/Rise/actions"><img src="https://github.com/Alistaire-Q/Rise/actions/workflows/flutter.yml/badge.svg" alt="Flutter CI" /></a>
+  <a href="https://github.com/Alistaire-Q/Rise./actions"><img src="https://github.com/Alistaire-Q/Rise./actions/workflows/flutter.yml/badge.svg" alt="Flutter CI" /></a>
 </p>
 
 ---
