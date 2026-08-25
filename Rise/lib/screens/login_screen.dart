@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
     try {
       // 1. Masukkan Web Client ID yang tadi kamu dapat dari Google Cloud
-      const webClientId = '299904295450-4ijprqt5clpuu6dp0mosqhtp2ldtp95f.apps.googleusercontent.com';
+      const webClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID';
 
       // 2. Inisialisasi Google Sign In
       final GoogleSignIn googleSignIn = GoogleSignIn(

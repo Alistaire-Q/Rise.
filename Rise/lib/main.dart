@@ -18,8 +18,8 @@ void main() async {
 
   // --- SETUP SUPABASE (DATABASE CLOUD) ---
   await Supabase.initialize(
-    url: 'https://nifixlekqywjislepvoz.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pZml4bGVrcXl3amlzbGVwdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzgyMjIsImV4cCI6MjA4MTIxNDIyMn0.yP95sQwrvLBM0qi1d_sS6ID5XKw38nCxRXKNqBcTmv4',
+    url: 'YOUR_SUPABASE_URL',
+    anonKey: 'YOUR_SUPABASE_ANON_KEY',
   );
 
   // --- SETUP DATABASE HIVE (LOCAL) ---
