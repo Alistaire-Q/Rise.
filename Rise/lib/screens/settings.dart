@@ -19,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // --- FUNGSI KIRIM EMAIL (BARU) ---
   Future<void> _sendEmail({required String subject, String body = ''}) async {
     // Alamat email tujuan (Email Kamu)
-    const String recipientEmail = 'qolbysumarrasatriawan@gmail.com';
+    const String recipientEmail = 'support@risefinance.app';
 
     // Membuat URL mailto yang aman (mengubah spasi jadi kode %20, dll)
     final Uri emailLaunchUri = Uri(

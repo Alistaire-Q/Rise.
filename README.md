@@ -433,8 +433,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <table>
   <tr>
     <td align="center">
-      <strong>Rise Team</strong><br/>
-      <sub>qolbysumarrasatriawan@gmail.com</sub>
+      <strong>Rise Team</strong>
     </td>
   </tr>
 </table>
