@@ -1,0 +1,36 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: ./Rise
+
+      - name: Generate Code (Hive)
+        run: dart run build_runner build --delete-conflicting-outputs
+        working-directory: ./Rise
+
+      - name: Analyze code
+        run: flutter analyze
+        working-directory: ./Rise
+
+      # Uncomment below if you have tests
+      # - name: Run tests
+      #   run: flutter test
+      #   working-directory: ./Rise

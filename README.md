@@ -9,187 +9,189 @@
 </p>
 
 <p align="center">
-  Aplikasi manajemen keuangan pribadi yang elegan dan powerful — dibangun dengan Flutter untuk pengalaman cross-platform yang mulus.
+  An elegant and powerful personal finance management application — built with Flutter for a seamless cross-platform experience.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white" alt="Flutter" />
-  <img src="https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white" alt="Dart" />
-  <img src="https://img.shields.io/badge/Supabase-Cloud-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Hive-Local_DB-FFD700?logo=hive&logoColor=black" alt="Hive" />
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white" alt="Flutter" /></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white" alt="Dart" /></a>
+  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-Cloud-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" /></a>
+  <a href="https://pub.dev/packages/hive"><img src="https://img.shields.io/badge/Hive-Local_DB-FFD700?logo=hive&logoColor=black" alt="Hive" /></a>
   <img src="https://img.shields.io/badge/Version-1.0.0-brightgreen" alt="Version" />
-  <img src="https://img.shields.io/badge/License-Proprietary-red" alt="License" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="https://github.com/Alistaire-Q/Rise/actions"><img src="https://github.com/Alistaire-Q/Rise/workflows/Flutter%20CI/badge.svg" alt="Flutter CI" /></a>
 </p>
 
 ---
 
-## Daftar Isi
+## Table of Contents
 
-- [Tentang Rise](#tentang-rise)
-- [Fitur Utama](#fitur-utama)
+- [About Rise](#about-rise)
+- [Key Features](#key-features)
 - [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
-- [Arsitektur](#arsitektur)
-- [Struktur Project](#struktur-project)
-- [Instalasi & Setup](#instalasi--setup)
-- [Alur Penggunaan](#alur-penggunaan)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Installation & Setup](#installation--setup)
+- [User Flow](#user-flow)
 - [Data Models](#data-models)
-- [Pengembangan Selanjutnya](#pengembangan-selanjutnya)
-- [Kontributor](#kontributor)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contributors](#contributors)
 
 ---
 
-## Tentang Rise
+## About Rise
 
-**Rise Finance** adalah aplikasi mobile personal finance manager yang dirancang untuk membantu pengguna mengelola keuangan sehari-hari dengan mudah dan intuitif. Dengan antarmuka yang modern dan fitur-fitur canggih seperti scan struk otomatis (OCR), transfer antar akun, dan analitik visual — Rise hadir sebagai solusi lengkap untuk mengontrol pemasukan, pengeluaran, dan pertumbuhan kekayaan.
+**Rise Finance** is a mobile personal finance manager designed to help users manage their daily finances easily and intuitively. 
 
-### Mengapa Rise?
+> **Developer Note:** While it serves as a practical utility app, Rise is also designed to be an **excellent learning resource and boilerplate** for developers. It demonstrates a clean architecture implementation using the **Provider pattern**, offline-first approach with **Hive**, cloud authentication via **Supabase**, and real-world ML integration using **Google ML Kit** for OCR. We welcome developers of all skill levels to explore, learn from, and contribute to this codebase!
 
-| Masalah | Solusi Rise |
+### Why Rise?
+
+| Problem | Rise Solution |
 |---------|------------|
-| Sulit mencatat pengeluaran harian | Quick action buttons + scan struk otomatis |
-| Tidak tahu kemana uang pergi | Analitik visual dengan donut chart per kategori |
-| Ribet pindah-pindah saldo akun | Transfer antar akun (Cash, Bank, Digital Wallet) dalam satu tap |
-| Data tidak aman | Google Sign-In + PIN & Biometrik |
-| Butuh multi-currency | Dukungan IDR & USD dengan konversi otomatis |
+| Hard to track daily expenses | Quick action buttons + automatic receipt scanning |
+| Don't know where the money goes | Visual analytics with donut charts per category |
+| Cumbersome to move account balances | Inter-account transfers (Cash, Bank, Digital Wallet) in one tap |
+| Data is not secure | Google Sign-In for cloud authentication |
+| Need multi-currency support | Supports IDR & USD with automatic conversion |
 
 ---
 
-## Fitur Utama
+## Key Features
 
-### Autentikasi & Keamanan
-- **Google Sign-In** — Login cepat dan aman menggunakan akun Google melalui Supabase Auth
-- **PIN Protection** — Kunci aplikasi dengan PIN 4+ digit
-- **Biometric Auth** — Dukungan fingerprint & face ID via `local_auth`
-- **Splash Screen** — Video intro yang memukau saat membuka aplikasi
+### Authentication & Security
+- **Google Sign-In** — Fast and secure login using a Google account via Supabase Auth
+- **Splash Screen** — Stunning video intro upon opening the app
 
 ### Dashboard
-- Tampilan **net balance** real-time (Income − Expense)
-- Ringkasan **income & expense** dalam card visual
-- **Quick Actions** — Tambah income, expense, atau transfer dalam satu sentuhan
-- Daftar **transaksi hari ini** dengan detail kategori dan waktu
+- Real-time **net balance** display (Income − Expense)
+- **Income & expense** summary in visual cards
+- **Quick Actions** — Add income, expense, or transfer with a single touch
+- List of **today's transactions** with detailed categories and time
 
-### Manajemen Transaksi
-- Tambah transaksi **income** atau **expense** dengan kategori yang sudah tersedia
-- **Kalkulator built-in** untuk input jumlah yang mudah
-- Pilih akun sumber (Cash, Bank, Digital Wallet)
-- Catatan/notes untuk setiap transaksi
-- **Hapus transaksi** dengan long-press (otomatis rollback saldo)
+### Transaction Management
+- Add **income** or **expense** transactions with preset categories
+- **Built-in calculator** for easy amount input
+- Select source account (Cash, Bank, Digital Wallet)
+- Notes for each transaction
+- **Delete transaction** via long-press (automatic balance rollback)
 
-### Scan Struk (OCR)
-- **Scan struk belanja** menggunakan kamera HP
-- Deteksi otomatis jumlah total menggunakan **Google ML Kit Text Recognition**
-- Mendukung format angka Indonesia (titik sebagai pemisah ribuan, koma sebagai desimal)
+### Receipt Scanner (OCR)
+- **Scan shopping receipts** using the phone's camera
+- Automatic detection of total amount using **Google ML Kit Text Recognition**
+- Supports Indonesian number format (dot as thousands separator, comma as decimal)
 - Keyword detection: "total", "jumlah", "bayar", "tagihan", "grand total"
-- Auto-fill ke form transaksi setelah scan berhasil
+- Auto-fill transaction form upon successful scan
 
-### Transfer Antar Akun
-- Transfer dana antara akun (misal: Cash → Bank)
-- **Atomic transaction** — debit & credit tercatat sebagai pasangan
-- Validasi saldo, akun aktif, dan limit transfer
-- **Idempotency check** untuk mencegah duplikasi transfer
-- **Audit logging** untuk setiap transfer yang berhasil maupun gagal
+### Inter-Account Transfers
+- Transfer funds between accounts (e.g., Cash → Bank)
+- **Atomic transactions** — debit & credit are recorded as a pair
+- Validation for balance, active accounts, and transfer limits
+- **Idempotency checks** to prevent duplicate transfers
+- **Audit logging** for every successful and failed transfer
 
-### Analitik & Statistik
-- **Donut chart** breakdown per kategori (custom painted)
-- Toggle antara tampilan **Expenses** dan **Income**
-- Navigasi per bulan (maju/mundur)
-- Persentase dan progress bar per kategori
+### Analytics & Statistics
+- **Donut chart** breakdown per category (custom painted)
+- Toggle between **Expenses** and **Income** views
+- Month-by-month navigation (forward/backward)
+- Percentage and progress bar per category
 - Top spending categories ranking
 
-### Manajemen Akun
-- Akun default otomatis: **Cash**, **Digital Wallet**, **Bank**
-- Lihat saldo per akun secara real-time
-- Riwayat transaksi per akun
+### Account Management
+- Automatic default accounts: **Cash**, **Digital Wallet**, **Bank**
+- View real-time balances per account
+- Transaction history per account
 
-### Pengaturan
-- **Pilihan mata uang** — USD ($) atau IDR (Rp) dengan konversi otomatis
-- **Feedback** — Kirim masukan langsung via email
-- **Help Center** — Hubungi support via email
-- **About** — Informasi versi aplikasi
-- **Log Out** — Sign out dari akun Google/Supabase
+### Settings
+- **Currency options** — USD ($) or IDR (Rp) with automatic conversion
+- **Feedback** — Send feedback directly via email
+- **Help Center** — Contact support via email
+- **About** — App version information
+- **Log Out** — Sign out from Google/Supabase account
 
 ---
 
 ## Screenshots
 
-> *Aplikasi menggunakan desain dengan palet warna hijau gelap (#043927) dan aksen lime (#C5F244) yang memberikan kesan premium dan fresh.*
+> *The app uses a dark green (#043927) color palette with lime accents (#C5F244) to provide a premium and fresh look.*
 
 | Login Screen | Dashboard | Analytics |
 |:---:|:---:|:---:|
-| Background custom + Logo Rise | Balance, Income/Expense cards | Donut chart & categories |
+| Custom background + Rise Logo | Balance, Income/Expense cards | Donut chart & categories |
 
 | Scan Receipt | Transfer | Settings |
 |:---:|:---:|:---:|
-| Kamera OCR auto-detect | Antar akun dengan validasi | Currency, feedback, logout |
+| OCR auto-detect camera | Inter-account with validation | Currency, feedback, logout |
 
 ---
 
 ## Tech Stack
 
 ### Framework & Language
-| Teknologi | Versi | Kegunaan |
+| Technology | Version | Purpose |
 |-----------|-------|----------|
 | **Flutter** | 3.x | Cross-platform UI framework |
-| **Dart** | ≥3.0.0 | Bahasa pemrograman utama |
+| **Dart** | ≥3.0.0 | Primary programming language |
 
 ### State Management
-| Package | Kegunaan |
+| Package | Purpose |
 |---------|----------|
 | `provider` ^6.0.0 | Reactive state management |
 
 ### Database & Storage
-| Package | Kegunaan |
+| Package | Purpose |
 |---------|----------|
-| `hive` ^2.2.3 | Database NoSQL lokal (utama) |
-| `hive_flutter` ^1.1.0 | Hive integration untuk Flutter |
+| `hive` ^2.2.3 | Local NoSQL database (primary) |
+| `hive_flutter` ^1.1.0 | Hive integration for Flutter |
 | `sqflite` ^2.3.0 | SQLite (legacy/backup) |
 | `shared_preferences` ^2.2.0 | Key-value storage (PIN, settings) |
-| `path_provider` ^2.1.0 | Akses file system path |
+| `path_provider` ^2.1.0 | File system path access |
 
 ### Cloud & Authentication
-| Package | Kegunaan |
+| Package | Purpose |
 |---------|----------|
 | `supabase_flutter` ^2.12.0 | Backend-as-a-Service (Auth, Database) |
 | `google_sign_in` ^6.2.1 | Native Google Sign-In |
-| `local_auth` ^2.3.0 | Biometric authentication |
 
 ### Camera & AI
-| Package | Kegunaan |
+| Package | Purpose |
 |---------|----------|
-| `camera` ^0.10.0 | Akses kamera device |
-| `image_picker` ^1.0.4 | Ambil foto dari kamera/galeri |
-| `google_mlkit_text_recognition` ^0.11.0 | OCR (text extraction dari gambar) |
+| `camera` ^0.10.0 | Device camera access |
+| `image_picker` ^1.0.4 | Pick images from camera/gallery |
+| `google_mlkit_text_recognition` ^0.11.0 | OCR (text extraction from images) |
 | `image` ^4.0.17 | Image processing |
 
 ### Utilities
-| Package | Kegunaan |
+| Package | Purpose |
 |---------|----------|
-| `intl` ^0.18.1 | Formatting tanggal & angka |
-| `uuid` ^4.0.0 | Generate unique ID untuk transfer |
-| `url_launcher` ^6.3.2 | Buka email/URL eksternal |
+| `intl` ^0.18.1 | Date & number formatting |
+| `uuid` ^4.0.0 | Generate unique IDs for transfers |
+| `url_launcher` ^6.3.2 | Open email/external URLs |
 | `video_player` ^2.8.2 | Video splash screen |
 
 ### Dev Dependencies
-| Package | Kegunaan |
+| Package | Purpose |
 |---------|----------|
-| `hive_generator` ^2.0.1 | Code generation untuk Hive adapters |
+| `hive_generator` ^2.0.1 | Code generation for Hive adapters |
 | `build_runner` ^2.4.6 | Dart code generator runner |
-| `flutter_launcher_icons` ^0.13.1 | Generate app icon otomatis |
+| `flutter_launcher_icons` ^0.13.1 | Automated app icon generation |
 
 ---
 
-## Arsitektur
+## Architecture
 
-Rise menggunakan arsitektur **Provider Pattern** yang sederhana namun scalable:
+Rise uses the **Provider Pattern** architecture, which is simple yet scalable:
 
 ```
 ┌─────────────────────────────────────────────────┐
 │                    UI Layer                      │
-│  (Screens: Dashboard, Analytics, Settings, dll)  │
+│  (Screens: Dashboard, Analytics, Settings, etc.) │
 ├─────────────────────────────────────────────────┤
 │                Provider Layer                    │
-│  Repository │ SecurityProvider │ CurrencyProvider │
+│         Repository │ CurrencyProvider             │
 ├─────────────────────────────────────────────────┤
 │               Service Layer                      │
 │     TransferService │ OcrService │ AuditLogger    │
@@ -199,19 +201,19 @@ Rise menggunakan arsitektur **Provider Pattern** yang sederhana namun scalable:
 └─────────────────────────────────────────────────┘
 ```
 
-### Alur Data
+### Data Flow
 
-1. **UI** memanggil method pada **Provider/Repository**
-2. **Repository** melakukan operasi CRUD pada **Hive Box** (local database)
-3. **Repository** memanggil `notifyListeners()` untuk update UI secara reaktif
-4. **Service layer** (TransferService, OcrService) menangani logika bisnis kompleks
-5. **Supabase** digunakan untuk autentikasi cloud (Google Sign-In)
+1. **UI** calls methods on the **Provider/Repository**
+2. **Repository** performs CRUD operations on the **Hive Box** (local database)
+3. **Repository** calls `notifyListeners()` to update the UI reactively
+4. **Service layer** (TransferService, OcrService) handles complex business logic
+5. **Supabase** is used for cloud authentication (Google Sign-In)
 
 ---
 
-## Struktur Project
+## Project Structure
 
-```
+```text
 Rise/
 ├── android/                    # Android platform files
 ├── ios/                        # iOS platform files
@@ -226,7 +228,7 @@ Rise/
 │   ├── Background.png          # Login screen background
 │   └── Risebg.png              # Rise logo
 │
-├── Montserrat/                 # Font keluarga Montserrat
+├── Montserrat/                 # Montserrat font family
 │   └── static/
 │       ├── Montserrat-ExtraBold.ttf
 │       ├── Montserrat-Bold.ttf
@@ -234,12 +236,11 @@ Rise/
 │
 ├── lib/
 │   ├── main.dart               # Entry point — setup Supabase, Hive, Providers
-│   ├── models.dart             # Data models (Account, Category, MoneyTransaction, dll)
+│   ├── models.dart             # Data models (Account, Category, MoneyTransaction, etc.)
 │   ├── models.g.dart           # Generated Hive adapters (auto-generated)
 │   ├── repository.dart         # Repository pattern — CRUD operations via Hive
 │   ├── db.dart                 # Legacy SQLite database helper
 │   ├── theme.dart              # App theme configuration (Material 3)
-│   ├── security_provider.dart  # PIN & biometric auth management
 │   ├── currency_provider.dart  # Currency switching (IDR/USD) & formatting
 │   ├── transfer_service.dart   # Atomic transfer logic & idempotency
 │   ├── audit_logger.dart       # Audit trail logging for transfers
@@ -249,20 +250,17 @@ Rise/
 │       ├── splash_screen.dart          # Video intro splash screen
 │       ├── login_screen.dart           # Google Sign-In login page
 │       ├── onboarding.dart             # First-time setup wizard
-│       ├── pin_setup.dart              # PIN creation screen
-│       ├── lock_screen.dart            # App lock screen (PIN/biometric)
 │       ├── home.dart                   # Main navigation (bottom nav bar)
-│       ├── dashboard.dart              # Dashboard utama (balance, transactions)
-│       ├── add_transaction.dart        # Form tambah transaksi
-│       ├── add_transaction_calculator.dart  # Kalkulator input jumlah
-│       ├── analytics.dart              # Analitik & donut chart
-│       ├── statistics_analysis.dart    # Statistik tambahan
-│       ├── calendar_dashboard.dart     # Kalender transaksi
-│       ├── accounts.dart               # Daftar & detail akun
-│       ├── transfer_screen.dart        # Transfer antar akun
-│       ├── scan_receipt_screen.dart     # Kamera OCR scan struk
-│       ├── settings.dart               # Halaman pengaturan
-│       └── security_settings.dart      # Pengaturan keamanan
+│       ├── dashboard.dart              # Main dashboard (balance, transactions)
+│       ├── add_transaction.dart        # Add transaction form
+│       ├── add_transaction_calculator.dart  # Input amount calculator
+│       ├── analytics.dart              # Analytics & donut chart
+│       ├── statistics_analysis.dart    # Additional statistics
+│       ├── calendar_dashboard.dart     # Transaction calendar
+│       ├── accounts.dart               # Account list & details
+│       ├── transfer_screen.dart        # Inter-account transfer
+│       ├── scan_receipt_screen.dart     # OCR camera receipt scanner
+│       └── settings.dart               # Settings page
 │
 ├── test/                       # Unit & widget tests
 ├── pubspec.yaml                # Dependencies & configuration
@@ -273,41 +271,41 @@ Rise/
 
 ---
 
-## Instalasi & Setup
+## Installation & Setup
 
-### Prasyarat
+### Prerequisites
 
-- **Flutter SDK** ≥ 3.0.0 ([Instalasi Flutter](https://flutter.dev/docs/get-started/install))
-- **Android Studio** / **VS Code** dengan Flutter extension
-- **Device fisik** atau **emulator** yang sudah terkoneksi
-- **JDK** 11+ (untuk build Android)
+- **Flutter SDK** ≥ 3.0.0 ([Flutter Installation](https://flutter.dev/docs/get-started/install))
+- **Android Studio** / **VS Code** with Flutter extension
+- **Physical device** or **emulator** connected
+- **JDK** 11+ (for Android build)
 
-### Langkah Instalasi
+### Installation Steps
 
-```powershell
+```bash
 # 1. Clone repository
 git clone https://github.com/Alistaire-Q/Rise.git
 
-# 2. Masuk ke direktori project
+# 2. Enter project directory
 cd Rise
 
 # 3. Install dependencies
 flutter pub get
 
-# 4. Generate Hive adapters (jika models.g.dart belum ada/outdated)
+# 4. Generate Hive adapters (if models.g.dart is missing/outdated)
 dart run build_runner build --delete-conflicting-outputs
 
-# 5. Generate app icon (opsional, jika ingin update icon)
+# 5. Generate app icon (optional, to update the icon)
 dart run flutter_launcher_icons
 
-# 6. Jalankan aplikasi
+# 6. Run the application
 flutter run
 ```
 
-### Konfigurasi Tambahan
+### Additional Configuration
 
-#### Supabase (Sudah dikonfigurasi)
-Project ini sudah terhubung ke instance Supabase. Jika ingin menggunakan instance sendiri, update kredensial di [`lib/main.dart`](Rise/lib/main.dart):
+#### Supabase (Pre-configured)
+This project is already connected to a Supabase instance. If you want to use your own instance, update the credentials in [`lib/main.dart`](Rise/lib/main.dart):
 
 ```dart
 await Supabase.initialize(
@@ -317,17 +315,17 @@ await Supabase.initialize(
 ```
 
 #### Google Sign-In
-OAuth Client ID sudah dikonfigurasi di [`lib/screens/login_screen.dart`](Rise/lib/screens/login_screen.dart). Untuk menggunakan akun Google Cloud sendiri:
-1. Buat project di [Google Cloud Console](https://console.cloud.google.com/)
+OAuth Client ID is pre-configured in [`lib/screens/login_screen.dart`](Rise/lib/screens/login_screen.dart). To use your own Google Cloud account:
+1. Create a project in the [Google Cloud Console](https://console.cloud.google.com/)
 2. Enable Google Sign-In API
-3. Buat OAuth 2.0 Client ID (Web Application)
-4. Update `webClientId` di `login_screen.dart`
+3. Create OAuth 2.0 Client ID (Web Application)
+4. Update `webClientId` in `login_screen.dart`
 
 ---
 
-## Alur Penggunaan
+## User Flow
 
-```
+```text
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │  Splash      │ ──► │  Login       │ ──► │  Home        │
 │  (Video)     │     │  (Google)    │     │  (Dashboard) │
@@ -346,50 +344,50 @@ OAuth Client ID sudah dikonfigurasi di [`lib/screens/login_screen.dart`](Rise/li
                                           └─────────────┘
 ```
 
-1. **Splash Screen** — Video intro Rise saat pertama buka
-2. **Login** — Autentikasi dengan Google account
-3. **Dashboard** — Lihat ringkasan keuangan & transaksi terbaru
-4. **Quick Actions** — Tambah income/expense/transfer dengan cepat
-5. **Scan Receipt** — Foto struk, OCR otomatis detect jumlah
-6. **Analytics** — Lihat breakdown pengeluaran/pemasukan per kategori
-7. **Accounts** — Kelola akun dan lihat saldo
-8. **Settings** — Atur mata uang, kirim feedback, log out
+1. **Splash Screen** — Rise video intro upon first launch
+2. **Login** — Authenticate with Google account
+3. **Dashboard** — View financial summary & latest transactions
+4. **Quick Actions** — Quickly add income/expense/transfer
+5. **Scan Receipt** — Photo receipt, automatic OCR detects amount
+6. **Analytics** — View expense/income breakdown per category
+7. **Accounts** — Manage accounts and view balances
+8. **Settings** — Set currency, send feedback, log out
 
 ---
 
 ## Data Models
 
 ### Account
-| Field | Type | Keterangan |
+| Field | Type | Description |
 |-------|------|------------|
 | `id` | `int?` | Primary key (auto-assigned by Hive) |
-| `name` | `String` | Nama akun (Cash, Bank, Digital Wallet) |
-| `balance` | `double` | Saldo saat ini |
-| `isActive` | `bool` | Status aktif akun |
-| `createdAt` | `DateTime?` | Waktu pembuatan |
+| `name` | `String` | Account name (Cash, Bank, Digital Wallet) |
+| `balance` | `double` | Current balance |
+| `isActive` | `bool` | Active status of the account |
+| `createdAt` | `DateTime?` | Creation time |
 
 ### MoneyTransaction
-| Field | Type | Keterangan |
+| Field | Type | Description |
 |-------|------|------------|
 | `id` | `int?` | Primary key |
-| `amount` | `double` | Jumlah transaksi |
+| `amount` | `double` | Transaction amount |
 | `type` | `TransactionType` | income / expense / transfer |
-| `accountId` | `int` | Akun sumber |
-| `categoryId` | `int?` | Kategori transaksi |
-| `targetAccountId` | `int?` | Akun tujuan (untuk transfer) |
-| `date` | `DateTime?` | Tanggal transaksi |
-| `notes` | `String?` | Catatan |
-| `transferId` | `String?` | UUID untuk pasangan transfer |
+| `accountId` | `int` | Source account |
+| `categoryId` | `int?` | Transaction category |
+| `targetAccountId` | `int?` | Target account (for transfer) |
+| `date` | `DateTime?` | Transaction date |
+| `notes` | `String?` | Notes |
+| `transferId` | `String?` | UUID for paired transfers |
 | `status` | `TransactionStatus` | pending / completed / failed / cancelled |
 
 ### Category
-| Field | Type | Keterangan |
+| Field | Type | Description |
 |-------|------|------------|
 | `id` | `int?` | Primary key |
-| `name` | `String` | Nama kategori |
+| `name` | `String` | Category name |
 | `icon` | `String?` | Icon identifier |
 
-### Kategori Default
+### Default Categories
 
 **Expense:** Food, Transportation, Healthcare, Shopping, Other Expense
 
@@ -397,22 +395,40 @@ OAuth Client ID sudah dikonfigurasi di [`lib/screens/login_screen.dart`](Rise/li
 
 ---
 
-## Pengembangan Selanjutnya
+## Roadmap
 
-- [ ] **Recurring Transactions** — Transaksi berulang (langganan, gaji bulanan)
-- [ ] **Cloud Sync** — Sinkronisasi data ke Supabase / Firebase
-- [ ] **Export Data** — Ekspor ke CSV / Excel / PDF
-- [ ] **Charts Lanjutan** — Bar chart, line chart untuk tren bulanan
-- [ ] **Web Dashboard** — Dashboard berbasis web untuk monitoring
-- [ ] **Encrypted Storage** — Upgrade dari SharedPreferences ke flutter_secure_storage
-- [ ] **Custom Categories** — Kategori buatan user dengan icon pilihan
-- [ ] **Live Exchange Rate** — Kurs mata uang real-time dari API
-- [ ] **Widget Home Screen** — Widget ringkasan saldo di home screen Android/iOS
-- [ ] **Dark Mode** — Tema gelap untuk penggunaan malam hari
+- [ ] **Recurring Transactions** — Repeating transactions (subscriptions, monthly salary)
+- [ ] **Cloud Sync** — Data synchronization to Supabase / Firebase
+- [ ] **Export Data** — Export to CSV / Excel / PDF
+- [ ] **Advanced Charts** — Bar charts, line charts for monthly trends
+- [ ] **Web Dashboard** — Web-based dashboard for monitoring
+- [ ] **Encrypted Storage** — Upgrade from SharedPreferences to flutter_secure_storage
+- [ ] **Custom Categories** — User-created categories with custom icons
+- [ ] **Live Exchange Rate** — Real-time currency exchange rates from API
+- [ ] **Home Screen Widget** — Balance summary widget on Android/iOS home screen
+- [ ] **Dark Mode** — Dark theme for nighttime use
 
 ---
 
-## Kontributor
+## Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## Contributors
 
 <table>
   <tr>
